@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"gorm.io/gen/field"
+	"github.com/nowindexman/gorm-gen/field"
 	"gorm.io/gorm"
 )
 
@@ -129,12 +129,13 @@ func (c *Column) needDefaultTag(defaultTagValue string) bool {
 		return false
 	}
 	switch c.ScanType().Kind() {
-	case reflect.Bool:
-		return defaultTagValue != "false"
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
-		return defaultTagValue != "0"
-	case reflect.String:
-		return defaultTagValue != ""
+	// 默认值都显示
+	//case reflect.Bool:
+	//  return defaultTagValue != "false"
+	//case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
+	//  return defaultTagValue != "0"
+	//case reflect.String:
+	//  return defaultTagValue != ""
 	case reflect.Struct:
 		return strings.Trim(defaultTagValue, "'0:- ") != ""
 	}
@@ -147,6 +148,12 @@ func (c *Column) defaultTagValue() string {
 	if !ok {
 		return ""
 	}
+
+	// 空字符串默认值也要加上 防止通过 go 结构体生成表时候 不生成默认值 导致后续插入数据没有此值报错
+	if value == "" {
+		return "''"
+	}
+
 	if value != "" && strings.TrimSpace(value) == "" {
 		return "'" + value + "'"
 	}
